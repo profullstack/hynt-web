@@ -4,16 +4,19 @@ const form = (params = {}) => view('register/Form.svelte', { ...params });
 const home = '/dashboard';
 
 export default {
-	get(request) {
-		const { session } = request;
+	async get(request) {
+		const { session, store } = request;
 
 		if (session.exists) {
 			// already logged in, redirect to dashboard
 			return redirect(home);
 		}
 
+		const { Countries } = store;
+		const countries = await Countries.get();
+
 		// show form
-		return form();
+		return form({ countries });
 	},
 	async post(request) {
 		const { session, store } = request;
@@ -41,15 +44,15 @@ export default {
 
 			await session.create({ token, user: me });
 
-      try {
-        await User.generateEmailVerifyCode(me.id);
+			try {
+				await User.generateEmailVerifyCode(me.id);
 
-        if (me.phone) {
-          await User.generatePhoneVerifyCode(me.id);
-        }  
-      } catch(err) {
-        console.error(err);
-      }
+				if (me.phone && me.phonePrefix) {
+					await User.generatePhoneVerifyCode(me.id);
+				}
+			} catch (err) {
+				console.error(err);
+			}
 
 			// todo: add a way to flash something to the user, can use a hash for now
 			// for example: /dashboard#flash=Some message
