@@ -4,22 +4,22 @@ import Stripe from 'stripe'
 
 export default {
 
-  async post(request){
-    
+  async post(request) {
+
     const stripe = new Stripe(env.STRIPE_SK);
 
     const { body, store } = request;
-    const { stripeProductId, priceId }  = body;
+    const { stripeProductId, priceId } = body;
     const { APP_DOMAIN } = process.env
 
     const { User, Product } = store
 
     const user = request.session.get("user")
-    
+
     var stripeCustomerId = user.stripeCustomerId;
 
-    if(!stripeCustomerId){
-      try{
+    if (!stripeCustomerId) {
+      try {
 
         const customer = await stripe.customers.create({
           email: user.email,
@@ -28,7 +28,7 @@ export default {
         stripeCustomerId = customer.id;
         await User.updateStripeCustomerId(user.id, stripeCustomerId)
 
-      }catch(e){
+      } catch (e) {
         console.log(e)
         return { error: "error creating stripe customer", };
       }
@@ -36,15 +36,15 @@ export default {
 
     const product = await Product.getByStripeProductId(stripeProductId)
 
-    const payment_intent_data  =  product.mode  !== "subscription" ? { metadata: { productId: stripeProductId } }  : {};
-    
+    const payment_intent_data = product.mode !== "subscription" ? { metadata: { productId: stripeProductId } } : {};
+
     const session = await stripe.checkout.sessions.create(
       {
         line_items: [
-            {
-            price: priceId, 
+          {
+            price: priceId,
             quantity: 1,
-            },
+          },
         ],
         customer: stripeCustomerId,
         success_url: `http://${APP_DOMAIN}/payment/history`,

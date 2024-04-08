@@ -1,32 +1,32 @@
 import env from 'rcompat/env';
 import { primary } from '@primate/types';
 
-export const actions = ({connection: db}) => {
-    return{
-        async getAllProducts(){
+export const actions = ({ connection: db }) => {
+    return {
+        async getAllProducts() {
 
-            try{
-  
+            try {
+
                 return await db.select('products');
 
-            }catch(e){
+            } catch (e) {
                 console.error(e)
                 throw e;
             }
 
         },
 
-        async getByStripeProductId(id){
+        async getByStripeProductId(id) {
             const query = `SELECT * FROM products WHERE stripeProductId = $id`;
 
-            try{
+            try {
 
                 const product = await db.query(query, {
-					id
-				});
+                    id
+                });
 
-				return product.pop().pop();
-            }catch(e){
+                return product.pop().pop();
+            } catch (e) {
                 console.error(e)
                 throw e;
             }
@@ -35,5 +35,5 @@ export const actions = ({connection: db}) => {
 }
 
 export default {
-	id: primary
+    id: primary
 };
