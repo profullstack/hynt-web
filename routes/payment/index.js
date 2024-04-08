@@ -10,7 +10,7 @@ export default {
 
     const { body, store } = request;
     const { stripeProductId, priceId } = body;
-    const { APP_DOMAIN } = process.env
+    const { APP_DOMAIN } = env
 
     const { User, Product } = store
 
